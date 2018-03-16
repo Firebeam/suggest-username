@@ -64,6 +64,10 @@ public class SuggestUsernameUI extends UI {
 				if (result.isValid()) {
 					resultLabel.setStyleName(ValoTheme.LABEL_SUCCESS);
 					resultLabel.setValue(String.format("Username %s has been added.", inputField.getValue()));
+				} else if (result.isForbidden()) {
+					resultLabel.setStyleName(ValoTheme.LABEL_FAILURE);
+					resultLabel.setValue(String.format("%s is a forbidden value. Here are some suggestions: %s",
+							inputField.getValue(), String.join(", ", result.getSuggestions())));
 				} else {
 					resultLabel.setStyleName(ValoTheme.LABEL_FAILURE);
 					resultLabel.setValue(String.format("Username %s is taken. Here are some suggestions: %s",

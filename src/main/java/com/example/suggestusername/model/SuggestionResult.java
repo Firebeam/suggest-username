@@ -12,10 +12,12 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class SuggestionResult {
 
 	private boolean isValid;
+	private boolean isForbidden;
 	private Set<String> suggestions;
 	private Set<String> existingNames;
 	private Set<String> restrictedWords;
@@ -25,7 +27,7 @@ public class SuggestionResult {
 
 	public SuggestionResult(YAMLConfig yamlConfig) throws IOException {
 		this.yamlConfig = yamlConfig;
-		this.suggestions = new TreeSet<>();
+		this.suggestions = new HashSet<>();
 		this.existingNames = new HashSet<>();
 		this.restrictedWords = new HashSet<>(FileUtils.readLines(new ClassPathResource(filePath +
 						"restricted.txt").getFile(), Charset.defaultCharset()));
@@ -35,8 +37,14 @@ public class SuggestionResult {
 		return isValid;
 	}
 
+	public boolean isForbidden() {
+		return isForbidden;
+	}
+
 	public Set<String> getSuggestions() {
-		return suggestions;
+		return suggestions.stream()
+				.limit(yamlConfig.getMaxResults())
+				.collect(Collectors.toCollection(TreeSet::new));
 	}
 
 	public void checkInput(String input) throws IllegalArgumentException, IOException {
@@ -75,30 +83,26 @@ public class SuggestionResult {
 
 	private Set<String> generateSuggestions(String input) {
 
-		Set<String> suggested = new TreeSet<>();
+		Set<String> suggested = new HashSet<>();
 		String tempInput = input;
 
 		int i = 0;
 		int suffixId = 0;
 		if (isContainedInSet(tempInput, this.restrictedWords)) {
 			// generate new input
-			tempInput = "random";
+			tempInput = "default";
+			this.isForbidden = true;
 		}
 
-		while (i < 7) { // so that number suggestions reach a theoretical end
-			String generatedTempInput;
-			generatedTempInput = tempInput + String.valueOf(suffixId);
+		generateNumberSuggestions(suggested, tempInput, i, suffixId);
 
-			// Verify if input is contained in the restricted list or in the existing list
-			// if it's false, add to suggestion list and increase i
-			if (!isEqualInSet(generatedTempInput, this.existingNames)) {
-				suggested.add(generatedTempInput);
-				i++;
-			}
+		generateStringRepetitionSuggestions(suggested, tempInput);
 
-			suffixId++;
-		}
+		return suggested;
+	}
 
+	private void generateStringRepetitionSuggestions(Set<String> suggested, String tempInput) {
+		int i;
 		i = 0;
 		int suffixLetter = 0;
 		String generatedTempInput;
@@ -118,8 +122,22 @@ public class SuggestionResult {
 				break;
 			}
 		}
+	}
 
-		return suggested;
+	private void generateNumberSuggestions(Set<String> suggested, String tempInput, int i, int suffixId) {
+		while (i < 7) { // so that number suggestions reach a theoretical end
+			String generatedTempInput;
+			generatedTempInput = tempInput + String.valueOf(suffixId);
+
+			// Verify if input is contained in the restricted list or in the existing list
+			// if it's false, add to suggestion list and increase i
+			if (!isEqualInSet(generatedTempInput, this.existingNames)) {
+				suggested.add(generatedTempInput);
+				i++;
+			}
+
+			suffixId++;
+		}
 	}
 
 	private boolean isContainedInSet(String word, Set<String> setToCheck) {
