@@ -67,7 +67,7 @@ public class SuggestUsernameUI extends UI {
 				} else {
 					resultLabel.setStyleName(ValoTheme.LABEL_FAILURE);
 					resultLabel.setValue(String.format("Username %s is taken. Here are some suggestions: %s",
-						inputField.getValue(), result.getSuggestions()));
+						inputField.getValue(), String.join(", ", result.getSuggestions())));
 				}
 
 			} catch (IllegalArgumentException | IOException e) {

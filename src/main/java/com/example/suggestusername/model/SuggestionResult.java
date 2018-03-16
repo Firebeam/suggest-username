@@ -54,28 +54,61 @@ public class SuggestionResult {
 	private void checkUsername(String input) throws IllegalArgumentException, IOException {
 		input = input.toLowerCase();
 
-		for (String restrictedWord : this.restrictedWords) {
-			if (StringUtils.contains(input, restrictedWord)) {
-				throw new IllegalArgumentException(String.format("The word contains a restricted word: %s",
-						restrictedWord));
-			}
-		}
-
 		File usernamesFile = new ClassPathResource(filePath + "usernames.txt").getFile();
 		this.existingNames.addAll(FileUtils.readLines(usernamesFile, Charset.defaultCharset()));
 
 		String finalInput = input;
-		Optional<String> foundOptional = this.existingNames.stream().filter(existingName -> StringUtils.equals(finalInput, existingName))
+		Optional<String> foundOptional = this.existingNames.stream().filter(existingName ->
+				StringUtils.equals(finalInput, existingName) || isContainedInSet(finalInput, this.restrictedWords))
 				.findAny();
 
 		if (foundOptional.isPresent()) {
 			// suggest
 			this.isValid = false;
-
+			this.suggestions = generateSuggestions(finalInput);
 		} else {
 			// add to file
-			FileUtils.writeStringToFile(usernamesFile, finalInput, Charset.defaultCharset(), true);
+			FileUtils.writeStringToFile(usernamesFile, System.lineSeparator() + finalInput, Charset.defaultCharset(), true);
 			this.isValid = true;
 		}
+	}
+
+	private Set<String> generateSuggestions(String input) {
+
+		Set<String> suggested = new TreeSet<>();
+		String tempInput;
+
+		int i = 0;
+		while (i < 7) { // so that number suggestions reach a theoretical end
+			tempInput = input.concat(String.valueOf(i));
+
+			// Verify if input is contained in the restricted list or in the existing list
+			// if it's false, add to suggestion list and increase i
+			if (!isContainedInSet(tempInput, this.restrictedWords) && !isContainedInSet(tempInput, this.existingNames)) {
+				suggested.add(tempInput);
+				i++;
+			}
+		}
+
+		/*i = 0;
+		while (i < 7) {
+			// given the input, take the first character and concatenate it to the existing string.
+			// on the second loop, take 2 characters and so on
+			tempInput = input.substring(0, input.length() - i);
+
+			i++;
+		}*/
+
+		return suggested;
+	}
+
+	private boolean isContainedInSet(String word, Set<String> setToCheck) {
+		for (String wordToCheck : setToCheck) {
+			if (StringUtils.contains(word, wordToCheck)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
