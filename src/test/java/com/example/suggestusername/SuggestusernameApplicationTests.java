@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -52,10 +53,58 @@ public class SuggestusernameApplicationTests {
 
 	@Test
 	public void addNonExisting() throws IOException {
-		suggestionResult.checkInput("nonExisting");
+		String wordToAdd = "nonExisting";
+		suggestionResult.checkInput(wordToAdd);
 
 		assertTrue(suggestionResult.isValid());
-		assertTrue(FileUtils.readLines(usernameFile, Charset.defaultCharset()).contains("nonExisting".toLowerCase()));
+		assertFalse(suggestionResult.isForbidden());
+		assertTrue(suggestionResult.getSuggestions().isEmpty());
+		assertTrue(FileUtils.readLines(usernameFile, Charset.defaultCharset()).contains(wordToAdd.toLowerCase()));
+	}
+
+	@Test
+	public void addNonExistingAndAddAgain() throws IOException {
+		String wordToAdd = "nonExisting";
+		suggestionResult.checkInput(wordToAdd);
+
+		assertTrue(suggestionResult.isValid());
+		assertFalse(suggestionResult.isForbidden());
+		assertTrue(suggestionResult.getSuggestions().isEmpty());
+		assertTrue(FileUtils.readLines(usernameFile, Charset.defaultCharset()).contains(wordToAdd.toLowerCase()));
+
+		suggestionResult.checkInput(wordToAdd);
+		assertFalse(suggestionResult.isValid());
+		assertFalse(suggestionResult.isForbidden());
+		assertTrue(suggestionResult.getSuggestions().contains(wordToAdd.toLowerCase() + "0"));
+		assertTrue(FileUtils.readLines(usernameFile, Charset.defaultCharset()).contains(wordToAdd.toLowerCase()));
+	}
+
+	@Test
+	public void addExisting() throws IOException {
+		String wordToAdd = "existing";
+		suggestionResult.checkInput(wordToAdd);
+
+		assertFalse(suggestionResult.isForbidden());
+		assertFalse(suggestionResult.isValid());
+		assertTrue(suggestionResult.getSuggestions().contains(wordToAdd.toLowerCase() + "0")); // example
+		assertTrue(FileUtils.readLines(usernameFile, Charset.defaultCharset()).contains(wordToAdd.toLowerCase()));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void addShortWord() throws IOException {
+		String wordToAdd = "a";
+		suggestionResult.checkInput(wordToAdd);
+	}
+
+	@Test
+	public void addForbidden() throws IOException {
+		String wordToAdd = "crack123";
+		suggestionResult.checkInput(wordToAdd);
+
+		assertTrue(suggestionResult.isForbidden());
+		assertFalse(suggestionResult.isValid());
+		assertTrue(suggestionResult.getSuggestions().contains("default0")); // example
+		assertFalse(FileUtils.readLines(usernameFile, Charset.defaultCharset()).contains(wordToAdd.toLowerCase()));
 	}
 
 	@After
