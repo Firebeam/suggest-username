@@ -29,9 +29,9 @@ ext {
 }
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('com.vaadin:vaadin-spring-boot-starter')
-	runtime('com.h2database:h2')
+	compile('org.apache.commons:commons-lang3:3.7')
+	compile('commons-io:commons-io:2.6')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
