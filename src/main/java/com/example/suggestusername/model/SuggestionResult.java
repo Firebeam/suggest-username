@@ -76,18 +76,27 @@ public class SuggestionResult {
 	private Set<String> generateSuggestions(String input) {
 
 		Set<String> suggested = new TreeSet<>();
-		String tempInput;
+		String tempInput = input;
 
 		int i = 0;
+		int suffixId = 0;
+		if (isContainedInSet(tempInput, this.restrictedWords)) {
+			// generate new input
+			tempInput = "random";
+		}
+
 		while (i < 7) { // so that number suggestions reach a theoretical end
-			tempInput = input.concat(String.valueOf(i));
+			String generatedTempInput;
+			generatedTempInput = tempInput + String.valueOf(suffixId);
 
 			// Verify if input is contained in the restricted list or in the existing list
 			// if it's false, add to suggestion list and increase i
-			if (!isContainedInSet(tempInput, this.restrictedWords) && !isContainedInSet(tempInput, this.existingNames)) {
-				suggested.add(tempInput);
+			if (!isEqualInSet(generatedTempInput, this.existingNames)) {
+				suggested.add(generatedTempInput);
 				i++;
 			}
+
+			suffixId++;
 		}
 
 		/*i = 0;
@@ -105,6 +114,16 @@ public class SuggestionResult {
 	private boolean isContainedInSet(String word, Set<String> setToCheck) {
 		for (String wordToCheck : setToCheck) {
 			if (StringUtils.contains(word, wordToCheck)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean isEqualInSet(String word, Set<String> setToCheck) {
+		for (String wordToCheck : setToCheck) {
+			if (StringUtils.equals(word, wordToCheck)) {
 				return true;
 			}
 		}
