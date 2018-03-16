@@ -99,14 +99,25 @@ public class SuggestionResult {
 			suffixId++;
 		}
 
-		/*i = 0;
+		i = 0;
+		int suffixLetter = 0;
+		String generatedTempInput;
 		while (i < 7) {
+			generatedTempInput = tempInput.concat(tempInput.substring(0, suffixLetter));
+
 			// given the input, take the first character and concatenate it to the existing string.
 			// on the second loop, take 2 characters and so on
-			tempInput = input.substring(0, input.length() - i);
+			if (!isContainedInSet(generatedTempInput, this.restrictedWords) && !isEqualInSet(generatedTempInput, this.existingNames)) {
+				suggested.add(generatedTempInput);
+				i++;
+			}
 
-			i++;
-		}*/
+			suffixLetter++;
+
+			if (suffixLetter > tempInput.length()) {
+				break;
+			}
+		}
 
 		return suggested;
 	}
