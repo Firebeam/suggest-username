@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -30,7 +31,16 @@ public class SuggestionResult {
 						"restricted.txt").getFile(), Charset.defaultCharset()));
 	}
 
+	public boolean isValid() {
+		return isValid;
+	}
+
+	public Set<String> getSuggestions() {
+		return suggestions;
+	}
+
 	public void checkInput(String input) throws IllegalArgumentException, IOException {
+		input = input.trim();
 		if (!StringUtils.isBlank(input)) {
 			if (input.length() < yamlConfig.getMinInputLength()) {
 				throw new IllegalArgumentException(String.format("Input must be greater than %d characters.",
@@ -51,7 +61,21 @@ public class SuggestionResult {
 			}
 		}
 
-		this.existingNames.addAll(FileUtils.readLines(new ClassPathResource(filePath +
-				"usernames.txt").getFile(), Charset.defaultCharset()));
+		File usernamesFile = new ClassPathResource(filePath + "usernames.txt").getFile();
+		this.existingNames.addAll(FileUtils.readLines(usernamesFile, Charset.defaultCharset()));
+
+		String finalInput = input;
+		Optional<String> foundOptional = this.existingNames.stream().filter(existingName -> StringUtils.equals(finalInput, existingName))
+				.findAny();
+
+		if (foundOptional.isPresent()) {
+			// suggest
+			this.isValid = false;
+
+		} else {
+			// add to file
+			FileUtils.writeStringToFile(usernamesFile, finalInput, Charset.defaultCharset(), true);
+			this.isValid = true;
+		}
 	}
 }

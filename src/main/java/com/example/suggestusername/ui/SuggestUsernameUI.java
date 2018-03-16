@@ -57,10 +57,19 @@ public class SuggestUsernameUI extends UI {
 
 	private Button.ClickListener checkUsername() {
 		return (Button.ClickListener) clickEvent -> {
-			System.out.println(inputField.getValue());
 			try {
 				SuggestionResult result = new SuggestionResult(yamlConfig);
 				result.checkInput(inputField.getValue());
+
+				if (result.isValid()) {
+					resultLabel.setStyleName(ValoTheme.LABEL_SUCCESS);
+					resultLabel.setValue(String.format("Username %s has been added.", inputField.getValue()));
+				} else {
+					resultLabel.setStyleName(ValoTheme.LABEL_FAILURE);
+					resultLabel.setValue(String.format("Username %s is taken. Here are some suggestions: %s",
+						inputField.getValue(), result.getSuggestions()));
+				}
+
 			} catch (IllegalArgumentException | IOException e) {
 				resultLabel.setValue(e.getMessage());
 				resultLabel.setStyleName(ValoTheme.LABEL_FAILURE);
