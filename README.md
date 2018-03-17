@@ -1,8 +1,8 @@
 # suggest-username
 
 ## Usage
-- gradlew bootRun to start up the application, point your browser to http://localhost:8080 afterwards.
-- gradlew test to run the unit tests.
+- `gradlew bootRun` to start up the application, point your browser to http://localhost:8080 afterwards.
+- `gradlew test` to run the unit tests.
 
 ## Room for improvement
 
