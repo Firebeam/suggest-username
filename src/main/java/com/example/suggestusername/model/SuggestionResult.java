@@ -59,7 +59,7 @@ public class SuggestionResult {
 		}
 	}
 
-	private void checkUsername(String input) throws IllegalArgumentException, IOException {
+	private void checkUsername(String input) throws IOException {
 		input = input.toLowerCase();
 
 		File usernamesFile = new ClassPathResource(filePath + "usernames.txt").getFile();
