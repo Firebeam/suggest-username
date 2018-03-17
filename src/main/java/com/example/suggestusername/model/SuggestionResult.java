@@ -86,15 +86,15 @@ public class SuggestionResult {
 		Set<String> suggested = new HashSet<>();
 		String tempInput = input;
 
-		int i = 0;
-		int suffixId = 0;
 		if (isContainedInSet(tempInput, this.restrictedWords)) {
 			// generate new input
 			tempInput = "default";
 			this.isForbidden = true;
 		}
 
-		generateNumberSuggestions(suggested, tempInput, i, suffixId);
+		generateNumberPrefixSuggestions(suggested, tempInput);
+
+		generateNumberSuffixSuggestions(suggested, tempInput);
 
 		generateStringRepetitionSuggestions(suggested, tempInput);
 
@@ -106,11 +106,9 @@ public class SuggestionResult {
 		i = 0;
 		int suffixLetter = 0;
 		String generatedTempInput;
-		while (i < 7) {
+		while (i < 5) {
 			generatedTempInput = tempInput.concat(tempInput.substring(0, suffixLetter));
 
-			// given the input, take the first character and concatenate it to the existing string.
-			// on the second loop, take 2 characters and so on
 			if (!isContainedInSet(generatedTempInput, this.restrictedWords) && !isEqualInSet(generatedTempInput, this.existingNames)) {
 				suggested.add(generatedTempInput);
 				i++;
@@ -124,8 +122,11 @@ public class SuggestionResult {
 		}
 	}
 
-	private void generateNumberSuggestions(Set<String> suggested, String tempInput, int i, int suffixId) {
-		while (i < 7) { // so that number suggestions reach a theoretical end
+	private void generateNumberSuffixSuggestions(Set<String> suggested, String tempInput) {
+		int i = 0;
+		int suffixId = 0;
+
+		while (i < 5) { // so that number suggestions reach a theoretical end
 			String generatedTempInput;
 			generatedTempInput = tempInput + String.valueOf(suffixId);
 
@@ -137,6 +138,25 @@ public class SuggestionResult {
 			}
 
 			suffixId++;
+		}
+	}
+
+	private void generateNumberPrefixSuggestions(Set<String> suggested, String tempInput) {
+		int i = 0;
+		int prefixId = 0;
+
+		while (i < 4) { // so that number suggestions reach a theoretical end
+			String generatedTempInput;
+			generatedTempInput = String.valueOf(prefixId) + tempInput;
+
+			// Verify if input is contained in the restricted list or in the existing list
+			// if it's false, add to suggestion list and increase i
+			if (!isEqualInSet(generatedTempInput, this.existingNames)) {
+				suggested.add(generatedTempInput);
+				i++;
+			}
+
+			prefixId++;
 		}
 	}
 
